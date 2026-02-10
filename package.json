@@ -3,12 +3,34 @@
   "version": "0.1.0",
   "description": "CLI for DeepWiki API — query, explore, and manage public GitHub repo documentation",
   "type": "module",
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicholasgriffintn/deepwiki-cli"
+  },
+  "keywords": [
+    "deepwiki",
+    "cli",
+    "github",
+    "documentation",
+    "codemap",
+    "devin"
+  ],
   "bin": {
     "deepwiki": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "tsup"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "commander": "^13.1.0",

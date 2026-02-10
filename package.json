@@ -30,7 +30,7 @@
     "prepublishOnly": "tsup"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "commander": "^13.1.0",

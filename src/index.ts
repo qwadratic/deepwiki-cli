@@ -1,5 +1,5 @@
-import { program } from "commander";
 import { randomUUID } from "node:crypto";
+import { program } from "commander";
 import WebSocket from "ws";
 
 // ---------------------------------------------------------------------------
@@ -7,6 +7,8 @@ import WebSocket from "ws";
 // ---------------------------------------------------------------------------
 
 const BASE_URL = process.env.DEEPWIKI_API_URL ?? "https://api.devin.ai";
+const POLL_INTERVAL_MS = 2000;
+const POLL_MAX_ATTEMPTS = 120;
 
 const ENGINE_MAP = {
   fast: "multihop_faster",
@@ -61,22 +63,19 @@ interface Codemap {
 // ---------------------------------------------------------------------------
 
 function err(message: string, extra?: Record<string, unknown>): never {
-  process.stderr.write(JSON.stringify({ error: message, ...extra }) + "\n");
+  process.stderr.write(`${JSON.stringify({ error: message, ...extra })}\n`);
   process.exit(1);
 }
 
 function out(data: unknown): void {
-  process.stdout.write(JSON.stringify(data, null, 2) + "\n");
+  process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
 }
 
 function ndjson(data: unknown): void {
-  process.stdout.write(JSON.stringify(data) + "\n");
+  process.stdout.write(`${JSON.stringify(data)}\n`);
 }
 
-async function api<T = unknown>(
-  path: string,
-  options?: RequestInit,
-): Promise<T> {
+async function api<T = unknown>(path: string, options?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
   const res = await fetch(url, {
     ...options,
@@ -123,7 +122,6 @@ export function codemapToMermaid(codemap: Codemap): string {
 
   for (let i = 0; i < traces.length; i++) {
     const trace = traces[i];
-    const [fill, stroke] = TRACE_COLORS[i % TRACE_COLORS.length];
     const sgId = sanitizeId(`trace_${trace.id}`);
     const title = escapeLabel(trace.title);
 
@@ -164,9 +162,7 @@ export function codemapToMermaid(codemap: Codemap): string {
   for (let i = 0; i < traces.length; i++) {
     const sgId = sanitizeId(`trace_${traces[i].id}`);
     const [fill, stroke] = TRACE_COLORS[i % TRACE_COLORS.length];
-    lines.push(
-      `    style ${sgId} fill:${fill},stroke:${stroke},stroke-width:2px`,
-    );
+    lines.push(`    style ${sgId} fill:${fill},stroke:${stroke},stroke-width:2px`);
   }
 
   return lines.join("\n");
@@ -175,7 +171,9 @@ export function codemapToMermaid(codemap: Codemap): string {
 function extractCodemap(queryResponse: Record<string, unknown>): Codemap | null {
   const queries = queryResponse.queries as Array<Record<string, unknown>> | undefined;
   if (!queries?.length) return null;
-  const response = queries[queries.length - 1].response as Array<Record<string, unknown>> | undefined;
+  const response = queries[queries.length - 1].response as
+    | Array<Record<string, unknown>>
+    | undefined;
   if (!response) return null;
   for (const chunk of response) {
     if (chunk.type === "chunk" && chunk.data) {
@@ -244,8 +242,8 @@ async function queryCommand(
   } else {
     // Poll until done
     let result: Record<string, unknown>;
-    for (let attempt = 0; attempt < 120; attempt++) {
-      await new Promise((r) => setTimeout(r, 2000));
+    for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt++) {
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
       result = await api<Record<string, unknown>>(`/ada/query/${queryId}`);
       const queries = result.queries as Array<Record<string, unknown>> | undefined;
       if (queries?.length) {
@@ -254,7 +252,7 @@ async function queryCommand(
           if (opts.mermaid && opts.mode === "codemap") {
             const codemap = extractCodemap(result);
             if (codemap) {
-              process.stdout.write(codemapToMermaid(codemap) + "\n");
+              process.stdout.write(`${codemapToMermaid(codemap)}\n`);
               return;
             }
           }
@@ -263,7 +261,8 @@ async function queryCommand(
         }
       }
     }
-    err("Query timed out after 240s", { query_id: queryId });
+    const timeoutSec = (POLL_INTERVAL_MS * POLL_MAX_ATTEMPTS) / 1000;
+    err(`Query timed out after ${timeoutSec}s`, { query_id: queryId });
   }
 }
 
@@ -276,32 +275,26 @@ async function statusCommand(repo: string): Promise<void> {
   const result = await api(
     `/ada/public_repo_indexing_status?repo_name=${encodeURIComponent(repo)}`,
   );
-  out({ repo_name: repo, ...result as object });
+  out({ repo_name: repo, ...(result as object) });
 }
 
 async function listCommand(search: string): Promise<void> {
-  const result = await api(
-    `/ada/list_public_indexes?search_repo=${encodeURIComponent(search)}`,
-  );
+  const result = await api(`/ada/list_public_indexes?search_repo=${encodeURIComponent(search)}`);
   out(result);
 }
 
 async function warmCommand(repo: string): Promise<void> {
-  const result = await api(
-    `/ada/warm_public_repo?repo_name=${encodeURIComponent(repo)}`,
-    { method: "POST" },
-  );
-  out({ repo_name: repo, ...result as object });
+  const result = await api(`/ada/warm_public_repo?repo_name=${encodeURIComponent(repo)}`, {
+    method: "POST",
+  });
+  out({ repo_name: repo, ...(result as object) });
 }
 
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 
-program
-  .name("deepwiki")
-  .description("CLI for DeepWiki API")
-  .version("0.1.0");
+program.name("deepwiki").description("CLI for DeepWiki API").version("0.1.0");
 
 program
   .command("query")

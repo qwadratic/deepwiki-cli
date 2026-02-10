@@ -27,6 +27,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/index.ts",
+    "check": "biome check --write . && tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "prepublishOnly": "tsup"
   },
   "engines": {
@@ -37,6 +40,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
     "@types/node": "^22.13.1",
     "@types/ws": "^8.5.14",
     "tsup": "^8.3.6",

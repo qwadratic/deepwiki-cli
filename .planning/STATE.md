@@ -1,7 +1,8 @@
 # DeepWiki CLI — Implementation State
 
-**Date:** 2026-02-09
+**Date:** 2026-02-10
 **Shape:** A (Thin fetch wrapper, single `src/index.ts`)
+**Package:** `@qwadratic/deepwiki-cli` (npm, not yet published — requires 2FA)
 
 ## Test Results
 
@@ -19,26 +20,31 @@
 
 ## Build
 
-- `pnpm build` succeeds — `dist/index.js` at 7.08 KB
+- `pnpm build` succeeds — `dist/index.js` at 7.14 KB, target node22
+- `pnpm check` passes — Biome lint/format + tsc --noEmit
 - `pnpm dev` works via tsx for development
-- Note: `pnpm approve-builds` needed for esbuild on first install
 
 ## Files
 
 ```
 deepwiki-cli/
-  PRD.md              # Product requirements (updated post-spike)
-  SHAPING.md          # Shape analysis, spike results, decision rationale
-  STATE.md            # This file
-  package.json
-  tsconfig.json
-  tsup.config.ts
+  .gitignore
+  .planning/
+    PRD.md            # Product requirements, spike results, technical design
+    SHAPING.md        # Requirements (R0-R14), shapes (A/B/C), decision record
+    STATE.md          # This file
+  AGENTS.md           # AI agent guidance, code standards, git rules
+  README.md           # Install, usage, MCP vs CLI rationale
+  biome.json          # Linting + formatting config
+  package.json        # @qwadratic/deepwiki-cli
+  tsconfig.json       # Strict, ES2024 target
+  tsup.config.ts      # ESM, node22 target, shebang
   pnpm-lock.yaml
   pnpm-workspace.yaml
   src/
-    index.ts          # Full CLI implementation (~340 lines)
+    index.ts          # Full CLI implementation (~335 lines)
   dist/
-    index.js          # Built output
+    index.js          # Built output (gitignored)
 ```
 
 ## Remaining Work
@@ -47,7 +53,7 @@ deepwiki-cli/
 2. **Verify thread follow-ups** (`--id` reuse)
 3. **Verify `get` command** against live API
 4. **Verify multi-repo** via CLI flags (API-level already confirmed)
-5. **Test built binary** — `chmod +x dist/index.js` and run via `./dist/index.js`
+5. **Publish to npm** — `npm publish --access public` (requires 2FA OTP)
 
 ## Spike Findings (Baked Into Implementation)
 

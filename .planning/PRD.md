@@ -106,20 +106,24 @@ deepwiki warm facebook/react
 
 ### Stack
 
-- **Runtime:** Node.js >=18 (native fetch)
-- **Language:** TypeScript (strict mode)
+- **Runtime:** Node.js >=22 (native fetch)
+- **Language:** TypeScript (strict mode, ES2024 target)
 - **CLI framework:** `commander`
 - **WebSocket:** `ws` (for `--stream` only)
-- **Build:** `tsup`
+- **Build:** `tsup` (ESM, node22 target)
+- **Lint/format:** Biome
 - **Package manager:** `pnpm`
 
 ### Project Structure
 
 ```
 deepwiki-cli/
-  PRD.md
-  SHAPING.md
-  STATE.md
+  .planning/
+    PRD.md          # This file
+    SHAPING.md
+    STATE.md
+  AGENTS.md
+  biome.json
   package.json
   tsconfig.json
   tsup.config.ts

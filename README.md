@@ -7,14 +7,22 @@ Built on reverse-engineered `api.devin.ai` endpoints. No auth required for publi
 ## Install
 
 ```bash
-pnpm install
-pnpm build
+npm install -g @qwadratic/deepwiki-cli
 ```
 
-Or run directly in development:
+Or use directly with npx:
 
 ```bash
-pnpm dev -- query "How does routing work?" -r facebook/react
+npx @qwadratic/deepwiki-cli query "How does routing work?" -r facebook/react
+```
+
+### From source
+
+```bash
+git clone https://github.com/qwadratic/deepwiki-cli.git
+cd deepwiki-cli
+pnpm install
+pnpm build
 ```
 
 ## Commands
@@ -112,6 +120,31 @@ deepwiki query "Show data flow" -r org/repo -m codemap --mermaid > diagram.mmd
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DEEPWIKI_API_URL` | `https://api.devin.ai` | Override API base URL |
+
+## Why not use DeepWiki MCP?
+
+The DeepWiki MCP exposes two tools: ask a question and retrieve a full wiki page. That covers the simplest use case but loses what makes DeepWiki actually useful — iterating on queries, switching between fast/deep/codemap modes, drawing code trace diagrams, and threading follow-up questions to narrow down an answer. This CLI reproduces that full workflow and makes it agent-friendly: a coding agent can warm a repo, check indexing status, query in codemap mode, pipe the result through `jq`, and follow up — all as composable shell commands.
+
+## Why not use existing `deepwiki-cli`?
+
+The [`deepwiki-cli`](https://www.npmjs.com/package/deepwiki-cli) package on npm retrieves docs via the DeepWiki MCP SSE protocol. It adds an intermediate layer (MCP) between you and the API, supports only basic Q&A, and doesn't expose mode selection, codemap traces, streaming, or any of the management commands. This package calls the API directly.
+
+<details>
+<summary>On MCP wrappers in general</summary>
+
+MCP servers load all tool descriptions into the context window on every session. Popular ones consume 7-9% of the context before any work begins, and this overhead compounds on every turn. When a CLI already exists, wrapping it in MCP adds a protocol layer that costs tokens without adding capability.
+
+LLMs already know standard CLI tools from training data. A CLI that outputs JSON to stdout is composable (`| jq`, `| grep`), needs no protocol negotiation, and lets agents pay the token cost only when they actually invoke the tool — not on every turn.
+
+As Mario Zechner (pi-coding-agent) puts it: "Just like a lot of meetings could have been emails, a lot of MCPs could have been CLI invocations." His benchmarks show CLI tools run ~30% cheaper than equivalent MCP wrappers at the same success rate.
+
+References:
+- [MCP vs CLI: Benchmarking Tools for Coding Agents](https://mariozechner.at/posts/2025-08-15-mcp-vs-cli/) — Mario Zechner
+- [What I learned building a minimal coding agent](https://mariozechner.at/posts/2025-11-30-pi-coding-agent/) — Mario Zechner
+- [Why Top Engineers Are Ditching MCP Servers](https://www.flowhunt.io/blog/why-top-engineers-are-ditching-mcp-servers/) — FlowHunt
+- [Excessive context usage for tools](https://github.com/github/github-mcp-server/issues/1286) — GitHub MCP Server
+
+</details>
 
 ## Disclaimer
 

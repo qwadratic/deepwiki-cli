@@ -1,5 +1,5 @@
 {
-  "name": "deepwiki-cli",
+  "name": "@qwadratic/deepwiki-cli",
   "version": "0.1.0",
   "description": "CLI for DeepWiki API — query, explore, and manage public GitHub repo documentation",
   "type": "module",
@@ -7,7 +7,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nicholasgriffintn/deepwiki-cli"
+    "url": "https://github.com/qwadratic/deepwiki-cli"
   },
   "keywords": [
     "deepwiki",
